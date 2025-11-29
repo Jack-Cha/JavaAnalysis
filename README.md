@@ -13,6 +13,10 @@ A tool that analyzes Java source code and automatically generates UML class diag
 - **Sequence Diagram Generation** (시퀀스 다이어그램 생성)
   - 메서드 호출 흐름 분석 (Method call flow analysis)
   - 특정 진입점(클래스/메서드) 기준 동작 시각화
+- **Component Diagram Generation** (컴포넌트 다이어그램 생성)
+  - 패키지를 컴포넌트로 분석 (Analyze packages as components)
+  - 컴포넌트 간 의존성 시각화 (Visualize dependencies between components)
+  - 제공/요구 인터페이스 표시 (Show provided/required interfaces)
 - PlantUML 형식 지원 (PlantUML format support)
 - PNG, SVG 이미지 자동 생성 (Automatic PNG and SVG image generation)
 
@@ -36,9 +40,12 @@ JavaAnalysis/
 │                   ├── UMLGenerator.java          # 메인 애플리케이션
 │                   ├── JavaSourceAnalyzer.java    # 자바 소스 분석기 (Class Diagram)
 │                   ├── SequenceAnalyzer.java      # 시퀀스 분석기 (Sequence Diagram)
+│                   ├── ComponentAnalyzer.java     # 컴포넌트 분석기 (Component Diagram)
 │                   ├── PlantUMLGenerator.java     # 클래스 다이어그램 생성기
 │                   ├── SequencePlantUMLGenerator.java # 시퀀스 다이어그램 생성기
+│                   ├── ComponentPlantUMLGenerator.java # 컴포넌트 다이어그램 생성기
 │                   ├── ClassInfo.java             # 클래스 정보 모델
+│                   ├── ComponentInfo.java         # 컴포넌트 정보 모델
 │                   ├── FieldInfo.java             # 필드 정보 모델
 │                   ├── MethodInfo.java            # 메서드 정보 모델
 │                   └── ParameterInfo.java         # 파라미터 정보 모델
@@ -128,6 +135,22 @@ gradlew sequence -PsourceDir=src/main/java -PclassName=UMLGenerator -PmethodName
 java -jar build/libs/JavaAnalysis-1.0.0.jar -sequence <source-dir> <class-name> <method-name> [output-path]
 ```
 
+### 3. Component Diagram Generation (컴포넌트 다이어그램 생성)
+
+**Gradle 실행:**
+```bash
+# 기본 (sample 디렉토리 분석)
+gradlew component
+
+# 사용자 정의 분석
+gradlew component -PsourceDir=src/main/java -PoutputDir=output/my-component-diagram
+```
+
+**JAR 실행:**
+```bash
+java -jar build/libs/JavaAnalysis-1.0.0.jar -component [source-directory] [output-base-path]
+```
+
 ## Command Line Arguments / 명령줄 인자
 
 ### Class Diagram Mode
@@ -146,6 +169,14 @@ java -jar JavaAnalysis.jar -sequence <source-directory> <class-name> <method-nam
 - `class-name`: 분석할 클래스 이름 (예: `Cat`)
 - `method-name`: 분석할 메서드 이름 (예: `play`)
 - `output-base-path`: 출력 경로 (선택)
+
+### Component Diagram Mode
+```
+java -jar JavaAnalysis.jar -component [source-directory] [output-base-path]
+```
+- `-component`: 컴포넌트 다이어그램 모드 플래그
+- `source-directory`: 소스 폴더 (선택, 기본값: `sample`)
+- `output-base-path`: 출력 경로 (선택, 기본값: `output/component-diagram`)
 
 ## Output Files / 출력 파일
 
@@ -175,6 +206,29 @@ Entry Point: Cat.play
 Sequence diagram generated at: output/cat-play-seq
 ```
 
+### Component Diagram Example
+```bash
+# sample 디렉토리 컴포넌트 분석
+gradlew component
+```
+출력:
+```
+Generating Component Diagram...
+Source directory: sample
+Output base path: output/component-diagram
+
+--- Analyzing Java Source Files ---
+Found 6 classes
+
+--- Analyzing Components ---
+Found 1 components
+  - Component: sample (5 classes, 1 interfaces, 0 dependencies)
+
+--- Generating Component Diagram ---
+Component diagram generated successfully
+```
+
+### Class Diagram Example
 출력:
 ```
 === Java Source UML Generator ===

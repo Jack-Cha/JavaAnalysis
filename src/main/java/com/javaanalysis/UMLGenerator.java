@@ -44,6 +44,8 @@ public class UMLGenerator {
                 System.exit(1);
             }
             generateSequenceDiagram(args);
+        } else if (args[0].equals("-component")) {
+            generateComponentDiagram(args);
         } else {
             generateClassDiagram(args);
         }
@@ -122,16 +124,67 @@ public class UMLGenerator {
         }
     }
 
+    private static void generateComponentDiagram(String[] args) {
+        String sourceDirectory = args.length > 1 ? args[1] : "sample";
+        String outputBasePath = args.length > 2 ? args[2] : "output/component-diagram";
+
+        try {
+            // Validate source directory
+            File sourceDir = new File(sourceDirectory);
+            if (!sourceDir.exists() || !sourceDir.isDirectory()) {
+                logger.error("Source directory does not exist or is not a directory: {}", sourceDirectory);
+                System.exit(1);
+            }
+
+            logger.info("Generating Component Diagram...");
+            logger.info("Source directory: {}", sourceDirectory);
+            logger.info("Output base path: {}", outputBasePath);
+
+            // Analyze Java source files
+            logger.info("\n--- Analyzing Java Source Files ---");
+            JavaSourceAnalyzer analyzer = new JavaSourceAnalyzer();
+            Map<String, ClassInfo> classInfoMap = analyzer.analyzeDirectory(sourceDirectory);
+
+            if (classInfoMap.isEmpty()) {
+                logger.warn("No Java classes found in the specified directory");
+                System.exit(0);
+            }
+
+            logger.info("Found {} classes", classInfoMap.size());
+
+            // Analyze components
+            logger.info("\n--- Analyzing Components ---");
+            ComponentAnalyzer componentAnalyzer = new ComponentAnalyzer();
+            Map<String, ComponentInfo> componentMap = componentAnalyzer.analyzeComponents(classInfoMap);
+
+            // Generate component diagram
+            logger.info("\n--- Generating Component Diagram ---");
+            ComponentPlantUMLGenerator generator = new ComponentPlantUMLGenerator();
+            generator.generateDiagram(componentMap, outputBasePath);
+
+            logger.info("\n=== Component Diagram Generation Complete ===");
+            logger.info("PlantUML file: {}.puml", outputBasePath);
+            logger.info("PNG diagram: {}.png", outputBasePath);
+            logger.info("SVG diagram: {}.svg", outputBasePath);
+
+        } catch (Exception e) {
+            logger.error("Error generating Component Diagram", e);
+            System.exit(1);
+        }
+    }
+
     /**
      * Prints usage information
      */
     private static void printUsage() {
         System.out.println("Usage:");
-        System.out.println("  Class Diagram:    java -jar JavaAnalysis.jar <source-directory> [output-base-path]");
-        System.out.println("  Sequence Diagram: java -jar JavaAnalysis.jar -sequence <source-directory> <class-name> <method-name> [output-base-path]");
+        System.out.println("  Class Diagram:     java -jar JavaAnalysis.jar <source-directory> [output-base-path]");
+        System.out.println("  Sequence Diagram:  java -jar JavaAnalysis.jar -sequence <source-directory> <class-name> <method-name> [output-base-path]");
+        System.out.println("  Component Diagram: java -jar JavaAnalysis.jar -component [source-directory] [output-base-path]");
         System.out.println();
         System.out.println("Examples:");
         System.out.println("  java -jar JavaAnalysis.jar ./src/main/java");
         System.out.println("  java -jar JavaAnalysis.jar -sequence ./sample Cat play output/cat-play-seq");
+        System.out.println("  java -jar JavaAnalysis.jar -component ./src/main/java output/component-diagram");
     }
 }

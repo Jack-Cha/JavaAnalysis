@@ -73,6 +73,18 @@ task sequence(type: JavaExec) {
     args = ['-sequence', sourceDir, className, methodName, outputDir]
 }
 
+// Task to run component diagram generation
+task component(type: JavaExec) {
+    mainClass = 'com.javaanalysis.UMLGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+    jvmArgs = ['-Dfile.encoding=UTF-8']
+
+    def sourceDir = project.hasProperty('sourceDir') ? project.property('sourceDir') : 'sample'
+    def outputDir = project.hasProperty('outputDir') ? project.property('outputDir') : 'output/component-diagram'
+
+    args = ['-component', sourceDir, outputDir]
+}
+
 // Eclipse configuration
 eclipse {
     project {
