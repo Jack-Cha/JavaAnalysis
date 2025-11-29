@@ -1,0 +1,92 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'eclipse'
+}
+
+group = 'com.javaanalysis'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // JavaParser for parsing Java source code
+    implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.25.8'
+
+    // PlantUML for generating UML diagrams
+    implementation 'net.sourceforge.plantuml:plantuml:1.2023.13'
+
+    // Logging
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+    implementation 'org.slf4j:slf4j-simple:2.0.9'
+
+    // Testing
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+application {
+    mainClass = 'com.javaanalysis.UMLGenerator'
+    applicationDefaultJvmArgs = ['-Dfile.encoding=UTF-8']
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+// Ensure UTF-8 encoding for compilation
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+// Task to run the application with arguments
+task analyze(type: JavaExec) {
+    mainClass = 'com.javaanalysis.UMLGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+    jvmArgs = ['-Dfile.encoding=UTF-8']
+
+    if (project.hasProperty('sourceDir')) {
+        args = [project.property('sourceDir')]
+    } else {
+        args = ['sample']
+    }
+}
+
+// Task to run sequence diagram generation
+task sequence(type: JavaExec) {
+    mainClass = 'com.javaanalysis.UMLGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+    jvmArgs = ['-Dfile.encoding=UTF-8']
+
+    def sourceDir = project.hasProperty('sourceDir') ? project.property('sourceDir') : 'sample'
+    def className = project.hasProperty('className') ? project.property('className') : 'Cat'
+    def methodName = project.hasProperty('methodName') ? project.property('methodName') : 'play'
+    def outputDir = project.hasProperty('outputDir') ? project.property('outputDir') : 'output/sequence-diagram'
+
+    args = ['-sequence', sourceDir, className, methodName, outputDir]
+}
+
+// Eclipse configuration
+eclipse {
+    project {
+        name = 'JavaAnalysis'
+        comment = 'Java Source Code to UML Diagram Generator'
+    }
+
+    classpath {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+
+    jdt {
+        sourceCompatibility = 25
+        targetCompatibility = 25
+    }
+}
